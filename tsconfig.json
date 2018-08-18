@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "commonjs",
+    "removeComments": true,
+    "sourceMap": false,
+    "alwaysStrict": true,
+    "outDir": "lib/",
+    "lib": [ "dom", "es5", "es6" ]
+  },
+  "files": [
+    "src/slider.ts"
+  ]
+}

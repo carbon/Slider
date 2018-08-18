@@ -1,0 +1,5 @@
+# Slider
+
+### Dependencies
+
+- Carbon.Core
