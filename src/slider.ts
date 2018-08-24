@@ -21,7 +21,13 @@ module Carbon {
 
     axis: string;
 
-    constructor(element: HTMLElement, options) {
+    last: number;
+
+    constructor(element: HTMLElement | string, options) {
+      if (typeof element === 'string') {
+        element = <HTMLElement>document.querySelector(element);
+      }
+
       this.element = element;
       this.options = options || {};
       this.trackEl = this.element.querySelector('.track') || this.element;
@@ -35,13 +41,31 @@ module Carbon {
 
       this.options = options || { };
 
+      // attributes...
+      let value = this.element.getAttribute('value');
+      let min = this.element.getAttribute('min');
+      let max = this.element.getAttribute('max');
+      let step = this.element.getAttribute('step');
+
+      
+      if (value && this.options.value === undefined) {
+        this.options.value = Number.parseFloat(value);
+      }
+
+      if (step && this.options.step === undefined) {
+        this.options.step = Number.parseFloat(step);
+      }
+
+      if (min && max && this.options.range === undefined) {
+        this.options.range = [ Number.parseFloat(min), Number.parseFloat(max) ];
+      }
+      
       this.scale = new LinearScale(this.options.range || [ 0, 1 ]);
 
-      this.step = this.options.step || null;
-
-      this._value = this.scale.getValue(0);
-
+      this.step = this.options.step || null;     
       this.axis = this.options.axis || 'x';
+      this.value = this.options.value || this.scale.range[0];
+
     }
     
     on(type, callback) {
@@ -111,6 +135,8 @@ module Carbon {
       this._value = value;
 
       let scale = _.clamp(this.scale.getScale(value), 0, 1);
+      
+      this.element.setAttribute('value', value.toString());
 
       this.setHandlePosition(scale);
     }
@@ -133,7 +159,11 @@ module Carbon {
       
       this._value = value;
 
-      this.trigger('change', { position: position, value });
+      if (this.last !== value) {
+        this.trigger('change', { position: position, value });
+      
+        this.last = value;
+      }
     }
 
     setHandlePosition(position: number) {
@@ -158,16 +188,8 @@ module Carbon {
       return this.range[0] + (this.range[1] - this.range[0]) * ((value - this.domain[0]) / (this.domain[1] - this.domain[0]))
     }
 
-    clamp(value: number, min: number, max: number): number {
-      if (value < min) return min;
-
-      if (value > max) return max;
-
-      return value;
-    }
 
     getValue(value: number) : number {
-
       // TODO: Support range
 
       let lower = this.domain[0];
@@ -180,6 +202,15 @@ module Carbon {
   }
 
   let _ = {
+
+    clamp(value: number, min: number, max: number): number {
+      if (value < min) return min;
+
+      if (value > max) return max;
+
+      return value;
+    },
+
     getRelativePositionX(x: number, relativeElement: HTMLElement) {
       return Math.max(0, Math.min(1, (x - this.findPosX(relativeElement)) / relativeElement.offsetWidth));
     },
