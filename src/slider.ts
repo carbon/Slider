@@ -70,7 +70,7 @@ module Carbon {
       // change
       // end
 
-      if (!this.reactive) return;
+      if (!this.reactive) return null;
 
       return this.reactive.on(type, callback);
     }
@@ -160,9 +160,9 @@ module Carbon {
 
       if (this.last !== value) {
         this.trigger('change', { position: position, value });
-      
-        this.last = value;
       }
+
+      this.last = value;
     }
 
     setHandlePosition(position: number) {
@@ -186,7 +186,6 @@ module Carbon {
     getScale(value: number) : number {
       return this.range[0] + (this.range[1] - this.range[0]) * ((value - this.domain[0]) / (this.domain[1] - this.domain[0]))
     }
-
 
     getValue(value: number) : number {
       // TODO: Support range
