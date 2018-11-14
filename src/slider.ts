@@ -20,7 +20,6 @@ module Carbon {
     scale: LinearScale;
 
     axis: string;
-
     last: number;
 
     constructor(element: HTMLElement | string, options) {
@@ -31,7 +30,7 @@ module Carbon {
       this.element = element;
       this.options = options || {};
       this.trackEl = this.element.querySelector('.track') || this.element;
-      this.handleEl = this.element.querySelector('.nub, .handle');
+      this.handleEl = this.element.querySelector('.handle');
 
       this.trackEl.addEventListener('mousedown', this.startDrag.bind(this), true);
     
@@ -46,7 +45,6 @@ module Carbon {
       let min = this.element.getAttribute('min');
       let max = this.element.getAttribute('max');
       let step = this.element.getAttribute('step');
-
       
       if (value && this.options.value === undefined) {
         this.options.value = Number.parseFloat(value);
@@ -65,7 +63,6 @@ module Carbon {
       this.step = this.options.step || null;     
       this.axis = this.options.axis || 'x';
       this.value = this.options.value || this.scale.range[0];
-
     }
     
     on(type, callback) {
@@ -159,6 +156,8 @@ module Carbon {
       
       this._value = value;
 
+      this.element.setAttribute('value', value.toString());
+
       if (this.last !== value) {
         this.trigger('change', { position: position, value });
       
@@ -202,7 +201,6 @@ module Carbon {
   }
 
   let _ = {
-
     clamp(value: number, min: number, max: number): number {
       if (value < min) return min;
 
