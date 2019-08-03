@@ -21,6 +21,9 @@ module Carbon {
 
     axis: string;
     last: number;
+    snap = false;
+    position: number;
+    frameRequest: any;
 
     constructor(element: HTMLElement | string, options) {
       if (typeof element === 'string') {
@@ -61,6 +64,8 @@ module Carbon {
       this.scale = new LinearScale(this.options.range || [ 0, 1 ]);
 
       this.step = this.options.step || null;     
+      this.snap = this.options.snap || false;     
+
       this.axis = this.options.axis || 'x';
       this.value = this.options.value || this.scale.range[0];
     }
@@ -80,6 +85,9 @@ module Carbon {
     }
 
     startDrag(e: MouseEvent) {
+
+      this.handleEl.style.transition = null;
+
       // ensure it was a right click
       if (e.which == 3) return;
 
@@ -109,20 +117,7 @@ module Carbon {
       this.trigger('start', { target: e.target });
     }
 
-    endDrag(e) {
-      this.element.classList.remove('active');
-      
-      e.preventDefault();
-      e.stopPropagation();
-      
-      this.onDrag(e);
-      
-      while (this.listeners.length > 0) {
-        this.listeners.pop().stop();
-      }
-
-      this.trigger('end', { value: this.value });
-    }
+   
 
     get value() {
       return this._value;
@@ -144,15 +139,26 @@ module Carbon {
         : _.getRelativePositionY(e.pageY, this.trackEl); // y
 
       var value = this.scale.getValue(position);
-      var scale = position;
+      var actualPosition = position;
 
       if (this.step) {
+        let before = value;
+
         value = Math.round(value / this.step) * this.step;
 
-        scale = this.scale.getScale(value);
+        value = Math.round(value * 1000) / 1000; // 3 decimal places
+
+        // document.querySelector('.debug').innerHTML = (Math.round(before * 1000) / 1000) + ' ' + value + ' ' + this.step);
+
+        position = this.scale.getScale(value);
       }
 
-      this.setHandlePosition(scale);
+      if (this.snap) {
+        this.setHandlePosition(position);
+      }
+      else {
+        this.setHandlePosition(actualPosition);
+      }
       
       this._value = value;
 
@@ -161,12 +167,51 @@ module Carbon {
       if (this.last !== value) {
         this.trigger('change', { position: position, value });
       }
-
+      
       this.last = value;
+      
+      this.position = position;
     }
 
+    endDrag(e: MouseEvent) {
+      this.element.classList.remove('active');
+      
+      e.preventDefault();
+      e.stopPropagation();
+      
+      console.log('end drag', this.position);
+
+
+      this.onDrag(e);
+
+      
+
+      this.handleEl.style.transition = 'left 50ms ease-out, top 50ms ease-out';
+      this.setHandlePosition(this.position);
+     
+
+      while (this.listeners.length > 0) {
+        this.listeners.pop().stop();
+      }
+
+      this.trigger('end', { value: this.value });
+    }
+    
+
     setHandlePosition(position: number) {
-      this.handleEl.style[this.axis == 'x' ? 'left' : 'top'] = (position * 100) + '%';
+
+      if (this.frameRequest) {
+        console.log('cancel!');
+      }
+
+      this.frameRequest && window.cancelAnimationFrame(this.frameRequest);
+
+      this.frameRequest = window.requestAnimationFrame(() => {
+        this.frameRequest = null;
+        
+        this.handleEl.style[this.axis == 'x' ? 'left' : 'top'] = (position * 100) + '%';
+      });
+
     }
 
     private trigger(type, data) {
