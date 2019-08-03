@@ -1,6 +1,6 @@
 {
   "name": "slider",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "main": "lib/slider.js",
   "author": "Jason Nelson",
   "license": "MIT"

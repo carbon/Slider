@@ -179,9 +179,6 @@ module Carbon {
       e.preventDefault();
       e.stopPropagation();
       
-      console.log('end drag', this.position);
-
-
       this.onDrag(e);
 
       
@@ -197,13 +194,7 @@ module Carbon {
       this.trigger('end', { value: this.value });
     }
     
-
     setHandlePosition(position: number) {
-
-      if (this.frameRequest) {
-        console.log('cancel!');
-      }
-
       this.frameRequest && window.cancelAnimationFrame(this.frameRequest);
 
       this.frameRequest = window.requestAnimationFrame(() => {
@@ -211,7 +202,6 @@ module Carbon {
         
         this.handleEl.style[this.axis == 'x' ? 'left' : 'top'] = (position * 100) + '%';
       });
-
     }
 
     private trigger(type, data) {
